@@ -6,3 +6,5 @@
 
 - [x] T007 Auto-return confirmed workshop assignments and update learner copy (FR-008).
 - [x] T008 Verify completion/error/standalone/history paths and document checks (AC-007).
+
+- [x] T009 Implement and verify direct assignment launch (FR-009 / AC-008).

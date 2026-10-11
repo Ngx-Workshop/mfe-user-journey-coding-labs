@@ -136,4 +136,35 @@ describe('Coding journey commands', () => {
     expect(TestBed.inject(Router).navigateByUrl).not.toHaveBeenCalled();
   });
 
+  it('directly resumes an active workshop lab without creating another attempt', () => {
+    route.next(convertToParamMap({ lab: lab.labId, launch: 'direct', returnTo: '/workshops/overview?workshop=w1&page=p1' }));
+    TestBed.tick();
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ replaceUrl: true, queryParamsHandling: 'merge', queryParams: { attempt: attempt._id, launch: null } }));
+    http.expectNone(request => request.method === 'POST');
+  });
+  it('directly starts an available workshop lab only once and retries failed launch on explicit refresh', () => {
+    const otherLab = { ...lab, labId: 'new-lab' };
+    route.next(convertToParamMap({ lab: otherLab.labId, launch: 'direct', returnTo: '/workshops/overview?workshop=w1&page=p1' }));
+    vm.refresh();
+    http.expectOne('/api/coding-labs/published-labs').flush([otherLab]);
+    http.expectOne('/api/user-metadata/coding-lab-attempts').flush([]); TestBed.tick();
+    const start = http.expectOne('/api/user-metadata/coding-lab-attempts');
+    expect(start.request.body.labId).toBe(otherLab.labId);
+    TestBed.tick(); http.expectNone('/api/user-metadata/coding-lab-attempts');
+    start.flush({}, { status: 503, statusText: 'Offline' }); TestBed.tick();
+    http.expectNone('/api/user-metadata/coding-lab-attempts');
+    vm.refresh();
+    http.expectOne('/api/coding-labs/published-labs').flush([otherLab]);
+    http.expectOne('/api/user-metadata/coding-lab-attempts').flush([]); TestBed.tick();
+    http.expectOne('/api/user-metadata/coding-lab-attempts').flush({ ...attempt, _id: 'new-attempt', labId: otherLab.labId });
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ replaceUrl: true, queryParams: { attempt: 'new-attempt', launch: null } }));
+  });
+  it('does not start an unavailable direct lab and leaves regular discovery untouched', () => {
+    route.next(convertToParamMap({ lab: 'missing', launch: 'direct' })); TestBed.tick();
+    expect(vm.missingLab()).toBeTrue(); http.expectNone(request => request.method === 'POST');
+    route.next(convertToParamMap({ lab: lab.labId })); TestBed.tick();
+    expect(TestBed.inject(Router).navigate).not.toHaveBeenCalled();
+    http.expectNone(request => request.method === 'POST');
+  });
+
 });

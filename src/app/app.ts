@@ -14,7 +14,7 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
   imports: [MatButtonModule, MatIconModule, MatProgressBarModule, LabHeroComponent, LabCatalogComponent, LabHistoryComponent, LabRunnerComponent, LabResultComponent],
   template: `
     <div class="lab-journey__journey">
-      @if (vm.view() !== 'attempt') { <ngx-lab-hero /> }
+      @if (vm.view() !== 'attempt' && !vm.directLaunch()) { <ngx-lab-hero /> }
       <nav class="lab-journey__journey-nav" aria-label="Coding lab views"><div>
         <button class="lab-journey__nav-button" [class.lab-journey__nav-button--active]="vm.view() === 'explore'" [attr.aria-current]="vm.view() === 'explore' ? 'page' : null" [disabled]="vm.busy()" (click)="vm.navigate('explore')"><mat-icon>grid_view</mat-icon>Explore labs</button>
         <button class="lab-journey__nav-button" [class.lab-journey__nav-button--active]="vm.view() === 'history'" [attr.aria-current]="vm.view() === 'history' ? 'page' : null" [disabled]="vm.busy()" (click)="vm.navigate('history')"><mat-icon>history</mat-icon>History & progress</button>
@@ -26,7 +26,7 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
       <button mat-stroked-button [disabled]="vm.busy()" (click)="vm.returnToWorkshop()"><mat-icon>arrow_back</mat-icon>Return to workshop</button>
     </section>
   }
-        @if (vm.loading() || vm.detailLoading()) { <div class="lab-journey__loading" role="status"><mat-progress-bar mode="indeterminate" aria-label="Loading coding labs" /><p>Getting your coding journey ready…</p></div> }
+        @if (vm.loading() || vm.detailLoading() || vm.openingAssignment()) { <div class="lab-journey__loading" role="status"><mat-progress-bar mode="indeterminate" aria-label="Loading coding labs" /><p>Getting your coding journey ready…</p></div> }
         @if (vm.error() || vm.detailError()) { <div class="lab-journey__error" role="alert"><mat-icon>error_outline</mat-icon><div><strong>We couldn’t complete that request</strong><p>{{ vm.error() || vm.detailError() }}</p>
           <button mat-button [disabled]="vm.loading() || vm.busy()" (click)="vm.refresh()">Refresh labs and history</button></div></div> }
         @if (vm.view() === 'attempt') {
@@ -34,7 +34,7 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
             <ngx-lab-runner [attempt]="item" [content]="content" [code]="vm.code()" [busy]="vm.busy()" [dirty]="vm.dirty()" [saved]="vm.saved()"
               (edit)="vm.edit($event)" (save)="vm.save()" (submit)="vm.submit()" (back)="vm.navigate('explore')" />
           } } }
-        } @else if (!vm.loading()) {
+        } @else if (!vm.loading() && !vm.openingAssignment()) {
           @if (vm.view() === 'history') { <ngx-lab-history [attempts]="vm.attempts()" [busy]="vm.busy()" (open)="vm.open($event)" (retry)="vm.start($event)" /> }
           @else if (vm.missingLab()) { <div class="lab-journey__missing" role="status"><h2>Workshop lab unavailable</h2><p>This coding lab is no longer published. You can continue your workshop or explore other labs.</p><button mat-button (click)="vm.showAllLabs()">Explore all labs</button></div> }
           @else { @if (vm.labId()) { <button mat-button (click)="vm.showAllLabs()">Explore all labs</button> } <ngx-lab-catalog [labs]="vm.filtered()" [attempts]="vm.attempts()" [busy]="vm.busy()" [search]="vm.search()" (searchChange)="vm.search.set($event)" (start)="vm.start($event)" /> }

@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, Subject, combineLatest, startWith, of, catchError, exhaustMap, finalize, switchMap, tap } from 'rxjs';
@@ -14,6 +14,9 @@ export class JourneyViewModel {
   private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
   private leaving = false;
+  private handledLaunch: string | null = null;
+  readonly directLaunch = signal(false);
+  readonly openingAssignment = computed(() => this.directLaunch() && this.busy());
   private readonly drafts = new Map<string, string>();
   private readonly reloads = new Subject<void>();
   private readonly commands = new Subject<Command>();
@@ -42,6 +45,8 @@ export class JourneyViewModel {
     combineLatest([this.route.queryParamMap, this.reloads.pipe(startWith(undefined))]).pipe(switchMap(([params]) => {
       const previous = this.attempt();
       if (previous && this.dirty()) this.drafts.set(previous._id, this.code());
+      this.directLaunch.set(params.get('launch') === 'direct' && !params.get('attempt'));
+      if (!this.directLaunch()) this.handledLaunch = null;
       this.returnTo.set(workshopReturn(params.get('returnTo')));
       this.workshopName.set(params.get('workshopName') || 'Your workshops');
       this.labId.set(params.get('lab'));
@@ -75,12 +80,22 @@ export class JourneyViewModel {
         }
       }));
     }), takeUntilDestroyed(this.destroy)).subscribe();
+    effect(() => {
+      if (!this.directLaunch() || this.loading() || this.busy() || this.error()) return;
+      const lab = this.labs().find(l => l.labId === this.labId());
+      if (!lab) return;
+      const key = JSON.stringify([lab.labId, this.returnTo()]);
+      if (this.handledLaunch === key) return;
+      this.handledLaunch = key;
+      const active = this.attempts().find(a => a.labId === lab.labId && a.status === 'in-progress');
+      untracked(() => active ? this.open(active) : this.start(lab.labId));
+    });
     this.store.refresh();
   }
-  refresh() { if (!this.canLeave()) return; this.store.refresh(); this.reloads.next(); }
+  refresh() { if (!this.canLeave()) return; this.handledLaunch = null; this.store.refresh(); this.reloads.next(); }
   navigate(view: 'explore' | 'history') {
     if (this.busy() || !this.canLeave()) return;
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { view: view === 'history' ? view : null, attempt: null }, queryParamsHandling: 'merge' });
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { view: view === 'history' ? view : null, attempt: null, launch: null }, queryParamsHandling: 'merge' });
   }
   returnToWorkshop() {
     const url = this.returnTo();
@@ -90,7 +105,7 @@ export class JourneyViewModel {
     }
   }
   showAllLabs() {
-    if (!this.busy() && this.canLeave()) void this.router.navigate([], { relativeTo: this.route, queryParams: { lab: null, attempt: null }, queryParamsHandling: 'merge' });
+    if (!this.busy() && this.canLeave()) void this.router.navigate([], { relativeTo: this.route, queryParams: { lab: null, attempt: null, launch: null }, queryParamsHandling: 'merge' });
   }
   canLeave() { return this.leaving || !this.dirty() || this.attempt()?.status === 'completed' || confirm('Your latest changes have not been saved. Leave this lab?'); }
   open(attempt: LabAttempt) {
@@ -98,7 +113,7 @@ export class JourneyViewModel {
     this.navigateToAttempt(attempt);
   }
   private navigateToAttempt(attempt: LabAttempt) {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { attempt: attempt._id }, queryParamsHandling: 'merge' });
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { attempt: attempt._id, launch: null }, queryParamsHandling: 'merge', replaceUrl: this.directLaunch() });
   }
   start(labId: string) { if (!this.busy() && this.canLeave()) this.commands.next({ kind: 'start', labId }); }
   save() { this.commands.next({ kind: 'save' }); }

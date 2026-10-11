@@ -18,3 +18,8 @@ No scoring, completion policy, API payload, federation export or deployment chan
 ## Automatic completion return — 2026-10-11
 FR-008: After a workshop-launched assignment is confirmed completed by the server, automatically return to the validated workshop destination, restoring the saved lesson and refreshed progress. Regular standalone assignments retain result views.
 AC-007: Successful assessment completion and completed lab submission navigate to the workshop with replaceUrl. Saved code alone, failed save/submit, and opening historical completed work do not trigger automatic return. Invalid/missing return context keeps ordinary result behavior. Lab completion is determined by persisted status, not passing score.
+
+## Direct assignment launch — 2026-10-11
+FR-009: Workshop links open the referenced lab/test directly, starting or resuming an eligible assignment without a discovery click. Completed assessments open their existing result; coding labs resume active work or start a fresh attempt according to existing retry rules. Missing/locked resources and request failures remain recoverable. Preserve automatic completion return.
+AC-008: launch=direct plus exact resource identity opens the assignment once after catalog/history load; no duplicate starts on rerender, no automatic retry after errors, and no starts for missing/locked resources. Ordinary discovery links without launch retain existing behavior.
+This supersedes the earlier no-auto-start decision for explicit workshop assignment links. Backend eligibility, ownership and scoring remain unchanged.
