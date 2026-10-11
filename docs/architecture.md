@@ -33,3 +33,10 @@ The metadata service calls authenticated POST /published-labs/:labId/grade on it
 The installed published coding-labs-contracts 0.0.6 predates these additive endpoints. Temporary generated `*.contract.ts` snapshots come from producer OpenAPI (never handwritten DTO replacements). After contract releases, replace snapshots with published imports. The snapshot exception is documented in the feature plan. LABS_API and ATTEMPTS_API injection tokens permit configured local test gateways.
 
 Deployment directory remains /opt/mfe-remotes/mfe-user-journey-coding-labs. Source implementation does not deploy services, publish packages, change remote registration or install host providers.
+
+## Workshop continuity — 2026-10-11
+
+See [003 continuity](../specs/003-workshop-continuity/handoff.md). Workshop reader route is `/workshops/overview`, matching its executable Routes. Activities accept `returnTo` (validated to that reader route and workshop/page query keys) and `workshopName`. Assessments accept an exact `test` definition ID; labs accept an exact published `lab` ID. Activity navigation merges query context; return reloads the server catalog and restores the lesson. No automatic starts or altered completion policy. Host Router owns cross-remote navigation; no nested remotes.
+
+### Automatic workshop return
+Workshop context now returns automatically on confirmed assignment submission: assessment finish or a completed coding-lab submit response. Return uses the validated workshop/page destination with replaceUrl. Save-only, failures and historical loads keep their current views; ordinary result navigation remains for assignments without workshop context. Workshop return reloads authoritative progress. Learner copy explains the automatic return.

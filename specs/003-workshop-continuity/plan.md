@@ -1,0 +1,10 @@
+# Implementation plan
+
+Use scoped journey view models for additive query navigation: workshop/page, assessment test, coding lab, returnTo and workshopName. Each remote remains independently deployable; no nested remotes or new shared package. Validate returnTo against /workshops/overview with only workshop/page parameters. Keep existing API clients and singleton stores.
+
+Workshop presentation adopts existing lab/assessment hero and theme foundations, an ordered contents rail and next activity. Activity pages display a consistent return banner, filter exact resources, preserve context across existing views and never auto-start a write. Restore workshops after catalog load, fetch the selected lesson and reconcile progress on return.
+
+Constitution: MVVM, OnPush, inline BEM, theme tokens, lifetime cleanup and federation interfaces preserved. Existing large App/workshop composition components remain cohesive composition exceptions; reader responsibilities split into activity outline. Verify meaningful navigation/restore regressions, existing failure/save suites, architecture guards, types and isolated production builds. Hosted auth/gateway walkthrough is separate integration evidence.
+
+### Automatic completion return
+Assessment runner's confirmed completion event routes to validated returnTo instead of result when launched from workshops. Coding VM redirects only for the active submit command returning completed status; capture the launch destination so an unrelated route cannot redirect stale work. No redirect for save/load/error or a noncompleted response. Use replaceUrl to avoid leaving a just-submitted assignment as the immediate browser-back destination. Preserve existing result/history flows without workshop context. Workshop constructor already reloads the authoritative catalog and restores page selection. Verify success, retry, invalid context, standalone results and historical loads with HTTP/Router doubles; signed-in shell walkthrough remains external integration.

@@ -38,3 +38,7 @@ For direct local tests override the two API injection tokens or provide a local 
 ## Verification evidence
 
 [002 handoff](../specs/002-learner-journey/handoff.md) records test/build results and integration scope. Validate catalog, saved-code reload, passing/failing results, historical views, retry, keyboard access and narrow layouts. To regenerate snapshots: run producers' build/OpenAPI and contract generation commands, then copy their generated components/paths types into models/*.contract.ts. Publish fresh contract versions in a separate release before switching to package imports.
+
+## Continuity verification — 2026-10-11
+
+17 ChromeHeadless tests and an isolated optimized build passed for this checkout. Synthetic desktop (1366px) and phone (390px) browser previews had no page errors or horizontal overflow. See [handoff](../specs/003-workshop-continuity/handoff.md) for evidence and the pending signed-in shell walkthrough. Use `/workshops/overview` for workshop returns; earlier `hello-world` workshop examples are outdated. Standalone lab providers now register exported Routes; cross-remote return paths still require host routing.

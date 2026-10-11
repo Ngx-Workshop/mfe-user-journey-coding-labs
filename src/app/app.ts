@@ -20,6 +20,12 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
         <button class="lab-journey__nav-button" [class.lab-journey__nav-button--active]="vm.view() === 'history'" [attr.aria-current]="vm.view() === 'history' ? 'page' : null" [disabled]="vm.busy()" (click)="vm.navigate('history')"><mat-icon>history</mat-icon>History & progress</button>
       </div><span>{{ vm.completed().length }} completed <i>·</i> {{ vm.passed().length }} passed</span></nav>
       <main #content tabindex="-1" [attr.aria-busy]="vm.loading() || vm.busy() || vm.detailLoading()">
+  @if (vm.returnTo()) {
+    <section class="lab-journey__workshop" aria-label="Workshop activity">
+      <div><span>WORKSHOP ACTIVITY</span><strong>{{ vm.workshopName() }}</strong><p>Your place in the workshop is kept. After you submit, you’ll return to your workshop automatically.</p></div>
+      <button mat-stroked-button [disabled]="vm.busy()" (click)="vm.returnToWorkshop()"><mat-icon>arrow_back</mat-icon>Return to workshop</button>
+    </section>
+  }
         @if (vm.loading() || vm.detailLoading()) { <div class="lab-journey__loading" role="status"><mat-progress-bar mode="indeterminate" aria-label="Loading coding labs" /><p>Getting your coding journey ready…</p></div> }
         @if (vm.error() || vm.detailError()) { <div class="lab-journey__error" role="alert"><mat-icon>error_outline</mat-icon><div><strong>We couldn’t complete that request</strong><p>{{ vm.error() || vm.detailError() }}</p>
           <button mat-button [disabled]="vm.loading() || vm.busy()" (click)="vm.refresh()">Refresh labs and history</button></div></div> }
@@ -30,7 +36,8 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
           } } }
         } @else if (!vm.loading()) {
           @if (vm.view() === 'history') { <ngx-lab-history [attempts]="vm.attempts()" [busy]="vm.busy()" (open)="vm.open($event)" (retry)="vm.start($event)" /> }
-          @else { <ngx-lab-catalog [labs]="vm.filtered()" [attempts]="vm.attempts()" [busy]="vm.busy()" [search]="vm.search()" (searchChange)="vm.search.set($event)" (start)="vm.start($event)" /> }
+          @else if (vm.missingLab()) { <div class="lab-journey__missing" role="status"><h2>Workshop lab unavailable</h2><p>This coding lab is no longer published. You can continue your workshop or explore other labs.</p><button mat-button (click)="vm.showAllLabs()">Explore all labs</button></div> }
+          @else { @if (vm.labId()) { <button mat-button (click)="vm.showAllLabs()">Explore all labs</button> } <ngx-lab-catalog [labs]="vm.filtered()" [attempts]="vm.attempts()" [busy]="vm.busy()" [search]="vm.search()" (searchChange)="vm.search.set($event)" (start)="vm.start($event)" /> }
         }
       </main><footer><span>Small steps. Lasting understanding.</span><span>NGX WORKSHOP <span class="lab-journey__footer-dot">✦</span></span></footer>
     </div>
@@ -50,6 +57,11 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
     font-family: 'Roboto', sans-serif;
   }
 * { box-sizing: border-box; }
+.lab-journey__workshop { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; margin-bottom: 28px; border: 1px solid var(--line); border-radius: 16px; background: var(--primary-soft); color: var(--on-primary-soft); }
+.lab-journey__workshop span { display: block; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 8px; }
+.lab-journey__workshop strong { display: block; overflow-wrap: anywhere; }
+.lab-journey__workshop p { margin-bottom: 0; font-size: 13px; line-height: 1.5; }
+@media (max-width: 600px) { .lab-journey__workshop { flex-direction: column; align-items: flex-start; } }
 .lab-journey__journey { min-height: 100%; }
 button { font-family: inherit; cursor: pointer; }
 button:disabled { cursor: default; }
