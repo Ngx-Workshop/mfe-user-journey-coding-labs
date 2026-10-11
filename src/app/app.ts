@@ -14,7 +14,7 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
   imports: [MatButtonModule, MatIconModule, MatProgressBarModule, LabHeroComponent, LabCatalogComponent, LabHistoryComponent, LabRunnerComponent, LabResultComponent],
   template: `
     <div class="lab-journey__journey">
-      @if (vm.view() !== 'attempt' && !vm.directLaunch()) { <ngx-lab-hero /> }
+      @if (vm.view() !== 'attempt' && vm.view() !== 'result' && !vm.directLaunch()) { <ngx-lab-hero /> }
       <nav class="lab-journey__journey-nav" aria-label="Coding lab views"><div>
         <button class="lab-journey__nav-button" [class.lab-journey__nav-button--active]="vm.view() === 'explore'" [attr.aria-current]="vm.view() === 'explore' ? 'page' : null" [disabled]="vm.busy()" (click)="vm.navigate('explore')"><mat-icon>grid_view</mat-icon>Explore labs</button>
         <button class="lab-journey__nav-button" [class.lab-journey__nav-button--active]="vm.view() === 'history'" [attr.aria-current]="vm.view() === 'history' ? 'page' : null" [disabled]="vm.busy()" (click)="vm.navigate('history')"><mat-icon>history</mat-icon>History & progress</button>
@@ -29,7 +29,7 @@ import { LabResultComponent } from './features/coding-labs/components/result/lab
         @if (vm.loading() || vm.detailLoading() || vm.openingAssignment()) { <div class="lab-journey__loading" role="status"><mat-progress-bar mode="indeterminate" aria-label="Loading coding labs" /><p>Getting your coding journey ready…</p></div> }
         @if (vm.error() || vm.detailError()) { <div class="lab-journey__error" role="alert"><mat-icon>error_outline</mat-icon><div><strong>We couldn’t complete that request</strong><p>{{ vm.error() || vm.detailError() }}</p>
           <button mat-button [disabled]="vm.loading() || vm.busy()" (click)="vm.refresh()">Refresh labs and history</button></div></div> }
-        @if (vm.view() === 'attempt') {
+        @if (vm.view() === 'attempt' || vm.view() === 'result') {
           @if (vm.attempt(); as attempt) { @if (attempt.status === 'completed') { <ngx-lab-result [attempt]="attempt" [busy]="vm.busy()" (retry)="vm.start($event)" (back)="vm.navigate('history')" /> } @else if (vm.content(); as content) { @for (item of [attempt]; track item._id) {
             <ngx-lab-runner [attempt]="item" [content]="content" [code]="vm.code()" [busy]="vm.busy()" [dirty]="vm.dirty()" [saved]="vm.saved()"
               (edit)="vm.edit($event)" (save)="vm.save()" (submit)="vm.submit()" (back)="vm.navigate('explore')" />

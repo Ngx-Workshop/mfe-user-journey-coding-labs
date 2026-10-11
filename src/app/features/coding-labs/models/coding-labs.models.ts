@@ -5,4 +5,4 @@ export type PublishedLab = Labs['schemas']['PublishedLabDto'];
 export type LabAttempt = Metadata['schemas']['LabAttemptDto'];
 export type SaveAttempt = Metadata['schemas']['SaveLabAttemptDto'];
 export type StartAttempt = Metadata['schemas']['StartLabAttemptDto'];
-export type LabView = 'explore' | 'history' | 'attempt';
+export type LabView = 'explore' | 'history' | 'attempt' | 'result';

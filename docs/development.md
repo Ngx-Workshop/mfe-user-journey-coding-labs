@@ -42,3 +42,7 @@ For direct local tests override the two API injection tokens or provide a local 
 ## Continuity verification — 2026-10-11
 
 17 ChromeHeadless tests and an isolated optimized build passed for this checkout. Synthetic desktop (1366px) and phone (390px) browser previews had no page errors or horizontal overflow. See [handoff](../specs/003-workshop-continuity/handoff.md) for evidence and the pending signed-in shell walkthrough. Use `/workshops/overview` for workshop returns; earlier `hello-world` workshop examples are outdated. Standalone lab providers now register exported Routes; cross-remote return paths still require host routing.
+
+## Route verification — 2026-10-11
+
+[004 routing](../specs/004-journey-routing/handoff.md) adds Angular RouterTestingHarness coverage beneath a host prefix, including legacy redirects, workspace/result reconciliation, direct launch, unsaved exits and same-route parameter changes. Browser Back uses Location test doubles with the router location listener enabled; production bootstrap installs that listener through provideRouter. Hosted signed-in deep-link/refresh and workshop return still require deployment verification.

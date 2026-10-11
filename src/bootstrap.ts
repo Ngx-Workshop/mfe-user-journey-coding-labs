@@ -1,7 +1,7 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { App } from './app/app';
+import { JourneyRootComponent } from './app/features/coding-labs/pages/journey/journey-root.component';
 import { appConfig } from './app/app.config';
 
-bootstrapApplication(App, appConfig).catch((error) => {
+bootstrapApplication(JourneyRootComponent, appConfig).catch((error) => {
   console.error(error);
 });

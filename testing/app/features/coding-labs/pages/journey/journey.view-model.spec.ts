@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, convertToParamMap } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { JourneyViewModel } from '../../../../../../src/app/features/coding-labs/pages/journey/journey.view-model';
 import { attempt, content, lab } from '../../../../../fixtures/labs';
 describe('Coding journey commands', () => {
@@ -12,8 +12,12 @@ describe('Coding journey commands', () => {
   beforeEach(() => {
     route = new BehaviorSubject(convertToParamMap({ attempt: attempt._id }));
     TestBed.configureTestingModule({ providers: [JourneyViewModel, provideHttpClient(), provideHttpClientTesting(),
-      { provide: ActivatedRoute, useValue: { queryParamMap: route } },
-      { provide: Router, useValue: { navigate: jasmine.createSpy('navigate').and.resolveTo(true), navigateByUrl: jasmine.createSpy('navigateByUrl').and.resolveTo(true) } }] });
+      { provide: ActivatedRoute, useValue: { get snapshot() { return {
+        queryParamMap: route.value,
+        paramMap: convertToParamMap({ attemptId: route.value.get('attempt') ?? '' }),
+        data: { view: route.value.get('attempt') ? 'attempt' : route.value.get('view') === 'history' ? 'history' : 'explore' },
+      }; } } },
+      { provide: Router, useValue: { events: route.pipe(map(() => new NavigationEnd(1, '/', '/'))), navigate: jasmine.createSpy('navigate').and.resolveTo(true), navigateByUrl: jasmine.createSpy('navigateByUrl').and.resolveTo(true) } }] });
     http = TestBed.inject(HttpTestingController); vm = TestBed.inject(JourneyViewModel);
     http.expectOne('/api/user-metadata/coding-lab-attempts/attempt').flush(attempt);
     http.expectOne('/api/coding-labs/published-labs/abc?versionId=version').flush(content);
@@ -73,7 +77,7 @@ describe('Coding journey commands', () => {
     route.next(convertToParamMap({ lab: 'abc', returnTo: '/workshops/overview?workshop=w1&page=p1', workshopName: 'Components' }));
     expect(vm.filtered().length).toBe(1); expect(vm.workshopName()).toBe('Components');
     vm.open(attempt);
-    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ queryParamsHandling: 'merge' }));
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['attempts', attempt._id], jasmine.objectContaining({ queryParamsHandling: 'merge' }));
     route.next(convertToParamMap({ lab: 'missing' }));
     expect(vm.filtered().length).toBe(0); expect(vm.missingLab()).toBeTrue();
     http.expectNone('/api/user-metadata/coding-lab-attempts');
@@ -139,7 +143,7 @@ describe('Coding journey commands', () => {
   it('directly resumes an active workshop lab without creating another attempt', () => {
     route.next(convertToParamMap({ lab: lab.labId, launch: 'direct', returnTo: '/workshops/overview?workshop=w1&page=p1' }));
     TestBed.tick();
-    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ replaceUrl: true, queryParamsHandling: 'merge', queryParams: { attempt: attempt._id, launch: null } }));
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['attempts', attempt._id], jasmine.objectContaining({ replaceUrl: true, queryParamsHandling: 'merge', queryParams: { view: null, attempt: null, launch: null } }));
     http.expectNone(request => request.method === 'POST');
   });
   it('directly starts an available workshop lab only once and retries failed launch on explicit refresh', () => {
@@ -157,7 +161,7 @@ describe('Coding journey commands', () => {
     http.expectOne('/api/coding-labs/published-labs').flush([otherLab]);
     http.expectOne('/api/user-metadata/coding-lab-attempts').flush([]); TestBed.tick();
     http.expectOne('/api/user-metadata/coding-lab-attempts').flush({ ...attempt, _id: 'new-attempt', labId: otherLab.labId });
-    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ replaceUrl: true, queryParams: { attempt: 'new-attempt', launch: null } }));
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['attempts', 'new-attempt'], jasmine.objectContaining({ replaceUrl: true, queryParams: { view: null, attempt: null, launch: null } }));
   });
   it('does not start an unavailable direct lab and leaves regular discovery untouched', () => {
     route.next(convertToParamMap({ lab: 'missing', launch: 'direct' })); TestBed.tick();
