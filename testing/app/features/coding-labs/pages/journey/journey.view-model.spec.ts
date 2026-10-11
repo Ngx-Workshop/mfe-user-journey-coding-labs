@@ -64,8 +64,7 @@ describe('Coding journey commands', () => {
   });
   it('retains unsaved code across browser query navigation', () => {
     vm.edit('draft kept locally');
-    route.next(convertToParamMap({ view: 'history' }));
-    route.next(convertToParamMap({ attempt: attempt._id }));
+    route.next(convertToParamMap({ attempt: attempt._id, workshopName: 'Components' }));
     http.expectOne('/api/user-metadata/coding-lab-attempts/attempt').flush(attempt);
     http.expectOne('/api/coding-labs/published-labs/abc?versionId=version').flush(content);
     expect(vm.code()).toBe('draft kept locally'); expect(vm.dirty()).toBeTrue();
