@@ -1,8 +1,8 @@
-# Constitution — Angular remote seed
+# Constitution — Learner coding labs
 
 Version: 1.1.0 · Adopted: 2026-09-29 · Updated: 2026-10-09
 
-These are durable requirements demonstrated by the executable starter. Verification
+These are durable requirements demonstrated by the learner remote. Verification
 evidence and integration limits belong in the development guide and feature handoffs.
 
 ## 1. One remote, one responsibility

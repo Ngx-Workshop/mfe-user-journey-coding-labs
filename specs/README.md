@@ -15,3 +15,5 @@ below with relative links. A feature folder contains `spec.md`, `plan.md`,
 Keep one row per feature, retain completed records for rationale, and update
 status when work changes. Select work from the user's request and this index;
 the largest folder number is not automatically the active feature.
+
+- [002 — Learner journey](002-learner-journey/spec.md): Implemented; authenticated beta integration pending.

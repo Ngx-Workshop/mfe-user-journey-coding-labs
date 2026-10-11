@@ -1,89 +1,35 @@
-# Architecture and external context
+# Learner coding labs architecture
 
-Updated 2026-10-09 for [001 MVVM starter](../specs/001-mvvm-starter/spec.md).
-The executable seed demonstrates example-document list/search/create/edit/delete.
-It owns this journey; shell, gateway, auth and backend data are external owners.
+Updated 2026-10-11. This remote owns published lab discovery, a coding workspace, saved progress, server-scored results, history and retry. Authoring remains in mfe-user-journey-admin-coding-labs. Coding service owns challenge definitions and grading; user metadata owns authenticated attempt persistence.
 
-## Source map
+## Source map and flow
 
-```text
-src/app/
-  app.ts / app.config.ts / app.routes.ts
-  features/example-documents/
-    api/                  # stateless ExampleCrudApiService
-    models/               # generated DTO exports, dialog/form types
-    state/                # singleton ExampleDocumentsStore
-    forms/                # stateless typed ExampleFormService
-    utils/                # user-facing API error mapping
-    pages/catalog/        # catalog orchestration + scoped CatalogViewModel
-    components/
-      document-card/      # typed card presentation
-      document-form/      # document/address form presentations
-      editor/             # dialog orchestration + scoped EditorViewModel
-testing/
-  app/                    # mirrors source app/features folders
-  fixtures/               # synthetic test-only DTOs
-scripts/check-architecture.mjs
-```
+`src/app/features/coding-labs`: stateless `api/`, generated DTO snapshots in `models/`, singleton `state/`, scoped `pages/journey/` view model, focused `components/` (hero/catalog/history/editor/runner/result), shared theme `styles/`, user errors in `utils/`. Tests mirror production under `testing/app`; fixtures are test-only.
 
-The data flow is API → singleton store → scoped VM → component template.
-User intents flow from presentation outputs → orchestration/VM → store → API.
-App is a thin public composition entry point. Catalog/dialog components inject
-scoped VMs and UI integration such as MatDialog. Cards/forms inject no server state.
-Forms accept a typed FormGroup from the owning scoped VM; this demonstrates nested
-presentation without putting forms in singleton state.
+HTTP → store → scoped view model → OnPush presentation. Query parameters `view=history` and `attempt=<id>` support browser navigation and reload. Replaceable reads use switchMap; duplicate-sensitive commands use exhaustMap. Submission first saves edited code, then grades using the saved revision. Busy state counts requests so chained save/submit stays disabled throughout. Conflicts retain local code; refresh requires confirmation before replacing unsaved edits. A route exit guard and beforeunload protect unsaved work. Scoped in-memory drafts survive query navigation without entering singleton state or browser storage.
 
-The store exposes readonly shared signals and owns loading/error/mutation state.
-Its root refresh stream uses switchMap to cancel stale reads and retains successful
-records on read failure. Mutation observables trigger refresh on success; finalize
-releases pending state on completion/error/cancellation. A refresh error after a
-successful write stays a read error, not a failed write that encourages duplicates.
-Scoped command streams use exhaustMap; takeUntilDestroyed ends their requests.
-Editor errors keep the form open and preserve input for retry. Form mapping sends
-false archived and blank description explicitly and validates optional addresses.
+CodeMirror owns only the editor view, emits code changes and releases resources on destruction. Tab remains available for keyboard navigation. Markdown uses Angular sanitized innerHTML with no trust bypass. Completed results need only the persisted attempt, so archiving a lab does not hide historical solutions. Retry uses current publication or resumes an existing unfinished attempt, preserving prior results.
 
 ## Federation and providers
 
-Keep named/default App, named Routes, mfe-user-journey-coding-labs, ./Component, ./Routes and
-remoteEntry.js. The route export retains empty-path redirect to hello-world.
-The host supplies HttpClient/session interceptors and Router when it consumes
-Routes. Remote loading does not install standalone appConfig. Standalone bootstrap
-uses App directly and needs no Router because the example has no route navigation.
-It provides zoneless change detection, HTTP and animations. src/styles.scss supplies
-the standalone Material theme; federation does not install this theme in the host.
+Preserved named/default App, named Routes, ./Component, ./Routes, remoteEntry.js, mfe-user-journey-coding-labs identity, hello-world route and Angular 21.1 shared compatibility. Standalone appConfig provides HttpClient and Router; federated consumers use host providers/session interceptors/theme. Existing production webpack concatenation repair remains. No remote nesting.
 
-Angular/Material/CDK 21.1.0, RxJS 7.8.2 and strict shared versions remain unchanged.
-Production webpack disables module concatenation to preserve Angular identities
-across federation boundaries; the inherited optimized configuration failed at
-runtime with a missing defineInjectable export before this repair.
-Module Federation and ngx-build-plus retain inherited 20-series versions; builds
-and standalone verification do not prove every host combination compatible.
+## Browser contracts
 
-## External contracts
+All requests use credentials and gateway paths; no production service address is embedded.
 
-The installed @tmdjr/seed-service-nestjs-contracts 0.0.7 types define the consumer
-DTOs; backend validation defines accepted requests. The stateless API normalizes
-its base URL to /api/example-crud and encodes IDs once for detail paths.
-
-| Method | Browser path | Contract |
+| Method | Path | Behavior |
 | --- | --- | --- |
-| GET | /api/example-crud | ExampleMongodbDocDto[] |
-| GET | /api/example-crud/:id | ExampleMongodbDocDto |
-| POST | /api/example-crud | CreateExampleMongodbDocDto → document |
-| PATCH | /api/example-crud/:id | UpdateExampleMongodbDocDto → document |
-| DELETE | /api/example-crud/:id | void |
+| GET | /api/coding-labs/published-labs | Published redacted catalog |
+| GET | /api/coding-labs/published-labs/:labId?versionId=... | Pinned published content |
+| GET | /api/user-metadata/coding-lab-attempts | Owned history including in-progress attempts |
+| GET | /api/user-metadata/coding-lab-attempts/:id | Owned code/result/revision |
+| POST | /api/user-metadata/coding-lab-attempts | Start/resume, labId + UUID requestId |
+| PATCH | /api/user-metadata/coding-lab-attempts/:id | Save code + revision |
+| POST | /api/user-metadata/coding-lab-attempts/:id/submit | Server grade, code + revision |
 
-The backend owns persistence/authorization. The seed contains no auth guard and
-does not fabricate credentials or backend behavior. Blank address fields omit
-the address property; PATCH then preserves an existing address. The published
-update DTO provides no null/removal field, so removing an address requires a
-producer contract change. Partial nonblank addresses are invalid locally.
+The metadata service calls authenticated POST /published-labs/:labId/grade on its configured CODING_LABS_BASE_URL. Neither browser nor metadata chooses tests or claims a score. Sample feedback is visible; hidden test inputs, names, outputs, expected answers, references and hashes are excluded.
 
-Host/registry owners are mfe-shell-workshop, mfe-shell-admin and
-service-mfe-orchestrator. Gateway owners map the browser API prefix to
-seed-service-nestjs. Package/shared metadata owners are independent repositories.
-No sibling checkout is needed; use local HTTP doubles when services are unavailable.
+The installed published coding-labs-contracts 0.0.6 predates these additive endpoints. Temporary generated `*.contract.ts` snapshots come from producer OpenAPI (never handwritten DTO replacements). After contract releases, replace snapshots with published imports. The snapshot exception is documented in the feature plan. LABS_API and ATTEMPTS_API injection tokens permit configured local test gateways.
 
-Build output remains dist/mfe-user-journey-coding-labs. The existing deploy workflow targets
-/opt/mfe-remotes/mfe-user-journey-coding-labs on main. Registration/gateway configuration and
-actual deployment are separate integration work; this change does not execute them.
+Deployment directory remains /opt/mfe-remotes/mfe-user-journey-coding-labs. Source implementation does not deploy services, publish packages, change remote registration or install host providers.

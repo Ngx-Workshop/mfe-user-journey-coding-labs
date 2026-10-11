@@ -1,45 +1,26 @@
 # Development and verification
 
-Use Node 22 (CI baseline) and the committed lockfile. Private registry access may
-be needed for npm ci; no sibling repository is required.
+Use Node 22 and the committed lockfile. Preserve Angular/Material 21.1 compatibility with the shell.
 
-| Purpose | Command | Notes |
-| --- | --- | --- |
-| Install | `npm ci` | Uses existing dependency versions |
-| Architecture | `npm run check:architecture` | Folder/API/state/inline/BEM/typed-code guard; >230 component lines requests review |
-| Dev server | `npm start` | Port 4201; no backend supplied |
-| Local bundle | `npm run dev:bundle` | Production watch + static CORS server; avoid competing servers |
-| Build | `npm run build` | Production federation bundle |
-| Isolated build | `npm run build -- --output-path dist/starter-verification` | Avoid overwriting an existing watcher output |
-| Tests | `npm test -- --watch=false --browsers=ChromeHeadless` | HTTP doubles; set CHROME_BIN when needed |
-| Types | `npx tsc --noEmit --noUnusedLocals --noUnusedParameters -p tsconfig.app.json` | Source types/unused symbols |
+| Purpose | Command |
+| --- | --- |
+| Install | npm ci |
+| Architecture | npm run check:architecture |
+| Dev server | npm start |
+| Local bundle watcher | npm run dev:bundle |
+| Production federation build | npm run build |
+| Isolated verification build | npm run build -- --output-path dist/learner-verification |
+| Behavior tests | npm test -- --watch=false --browsers=ChromeHeadless |
+| Source types | npx tsc --noEmit --noUnusedLocals --noUnusedParameters -p tsconfig.app.json |
 
-Specs are under testing/app, mirroring src/app; synthetic DTOs live in
-testing/fixtures. See [testing guide](../testing/README.md) for focused commands.
+Existing local servers should keep their port/output; use the isolated build during verification. Tests use HTTP doubles. Source has no browser execution fallback or synthetic production catalog.
 
-## Verification and automation
+## Live integration
 
-Architecture checks complement compiler/tests and do not replace full lint or code
-review. The lightweight script checks explicit source conventions, not every
-semantic dependency. CI runs architecture checks, ChromeHeadless tests and a
-production build. Deployment also runs the architecture guard before building.
-Auth/gateway/host integration must be verified separately with test records.
-No end-to-end framework or general-purpose lint dependency is introduced.
+Deploy service-coding-labs before service-user-metadata, set metadata CODING_LABS_BASE_URL to the coding service base (without /published-labs), and forward platform authentication. Gateway must forward /api/coding-labs/* and /api/user-metadata/* with the existing prefix conventions. The new metadata collection is coding_lab_attempts, with unique per-user request IDs and a partial unique active attempt per user/lab. Ensure its indexes exist before serving concurrent starts.
 
-For UI changes inspect loading/empty/error/success states, keyboard form submission,
-validation, dialog retry and narrow layouts. Static bundle serving does not proxy
-/api; supply an explicit local gateway or synthetic fixtures. Host development
-uses the platform's session-local remote override for localhost:4201/remoteEntry.js.
-Standalone appConfig is not installed by host remote loading.
+For direct local tests override the two API injection tokens or provide a local gateway. Browser auth and host providers remain host-owned. Do not relax authentication to get a screenshot. The beta URL redirected the verification browser to sign-in; local browser tests used a disposable Mongo database, real Docker grading, and a controlled test identity.
 
-## Current limits and repaired starter defects
+## Verification evidence
 
-The obsolete title test, component API coupling, missing subscription teardown,
-optimized Angular federation initialization, missing standalone Material theme,
-double-slash detail URLs, unsafe casts, partial-address acceptance and false/blank
-update omission are repaired. Save failures retain the editor and its values.
-The generated DTO does not support removing a stored address; blank address edits
-preserve it and the UI explains this. No auth policy, producer change, deployment
-or live-data test is part of this starter upgrade.
-
-See [001 handoff](../specs/001-mvvm-starter/handoff.md) for actual results and limits.
+[002 handoff](../specs/002-learner-journey/handoff.md) records test/build results and integration scope. Validate catalog, saved-code reload, passing/failing results, historical views, retry, keyboard access and narrow layouts. To regenerate snapshots: run producers' build/OpenAPI and contract generation commands, then copy their generated components/paths types into models/*.contract.ts. Publish fresh contract versions in a separate release before switching to package imports.

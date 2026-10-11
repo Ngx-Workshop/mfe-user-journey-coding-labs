@@ -6,5 +6,6 @@ export const Routes: Route[] = [
   {
     path: 'hello-world',
     component: App,
+    canDeactivate: [(app: App) => app.vm.canLeave()],
   },
 ];

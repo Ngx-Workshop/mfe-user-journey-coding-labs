@@ -1,19 +1,5 @@
-# Seed example tests
+# Learner behavior tests
 
-Specs live outside production source. testing/app mirrors src/app; fixtures live
-under testing/fixtures. Runtime code must not import testing. Move matching specs
-and update imports when feature folders change.
+Specs mirror src/app beneath testing/app. Fixtures live in testing/fixtures and never enter runtime. Run `npm test -- --watch=false --browsers=ChromeHeadless`.
 
-Run the full suite with `npm test -- --watch=false --browsers=ChromeHeadless`.
-Run a focused suite with:
-
-```sh
-npm test -- --watch=false --browsers=ChromeHeadless \
-  --include='../testing/app/features/example-documents/forms/example-form.service.spec.ts'
-```
-
-Karma discovery is relative to src: angular.json includes ../testing/**/*.spec.ts.
-The test compiler includes testing/**/*.ts plus src/**/*.d.ts and compiles app
-modules through imports. The production compiler excludes specs/testing.
-HTTP doubles verify client mappings, shared state cancellation/retry, form
-validation/update semantics, scoped editor commands and actual app rendering.
+HTTP double tests cover catalog/search/loading/empty/error, history preservation, saved revisions, duplicate-sensitive commands, chained save/submission, failed saves, runner failure/retry and completed results without published content. These do not establish production auth or gateway behavior. Backend HTTP tests use disposable local Mongo databases; a separate local browser run also verified real Docker grading.

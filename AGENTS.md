@@ -1,8 +1,8 @@
 # Agent entry point — mfe-user-journey-coding-labs
 
-This repository is the Angular remote seed for Ngx-Workshop. Assume you have
+This repository is the learner coding labs journey for Ngx-Workshop. Assume you have
 access to this repository only. The shell, gateway, services, and shared libraries
-are separate repositories; their source is not required to understand this seed.
+are separate repositories; their source is not required to understand this journey.
 
 ## Read before implementation
 
@@ -12,7 +12,7 @@ are separate repositories; their source is not required to understand this seed.
 4. [Workflow](.specify/README.md): specify → plan → tasks → implement → verify.
 5. The relevant feature folder listed in [specs](specs/README.md), if one exists.
 
-For a newly cloned product repository, also follow [seed adoption](docs/seed-adoption.md).
+The seed is adopted; [seed adoption](docs/seed-adoption.md) records completion. Current work is [002 learner journey](specs/002-learner-journey/spec.md).
 All links above resolve within this checkout. Do not assume a sibling repository exists.
 
 ## Working rules
