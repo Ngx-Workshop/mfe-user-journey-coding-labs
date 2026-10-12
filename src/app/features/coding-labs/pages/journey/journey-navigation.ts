@@ -7,8 +7,11 @@ export class JourneyNavigation {
   canLeave: (() => boolean) | null = null;
 }
 
-export const protectJourneyParams: CanActivateFn = next => {
+export const protectJourneyParams: CanActivateFn = (next) => {
   let current = inject(Router).routerState.snapshot.root;
   while (current.firstChild) current = current.firstChild;
-  return current.routeConfig !== next.routeConfig || (inject(JourneyNavigation).canLeave?.() ?? true);
+  return (
+    current.routeConfig !== next.routeConfig ||
+    (inject(JourneyNavigation).canLeave?.() ?? true)
+  );
 };

@@ -1,80 +1,179 @@
 @use 'sass:list';
 
 @mixin foundation($elements: ()) {
-  :host { display: block; color: var(--ink); font-family: inherit; }
-  * { box-sizing: border-box; }
-  h2, h3, p { margin: 0; overflow-wrap: anywhere; }
-  h2 { font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.8px; line-height: 1.2; }
-  h3 { font-size: 20px; letter-spacing: -0.3px; }
-  p { color: var(--muted); line-height: 1.65; }
-  button { font-family: inherit; }
-  button:not(:disabled), a { cursor: pointer; }
-  button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  :host {
+    display: block;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  h2,
+  h3,
+  p {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+  }
+  h3 {
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+  p {
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  button {
+    font-family: inherit;
+  }
+  button:not(:disabled),
+  a {
+    cursor: pointer;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+  }
   @if list.index($elements, 'eyebrow') {
     .lab-ui__eyebrow {
-      display: block; font-size: 10px; font-weight: 750; letter-spacing: 1.8px; color: var(--accent);
+      display: block;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.8px;
+      color: var(--accent);
       margin-bottom: 10px;
     }
   }
   @if list.index($elements, 'section-heading') {
     .lab-ui__section-heading {
-      display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 26px;
     }
   }
   @if list.index($elements, 'section-heading') {
-    .lab-ui__section-heading p { margin-top: 10px; font-size: 14px; }
+    .lab-ui__section-heading p {
+      margin-top: 10px;
+      font-size: 14px;
+    }
   }
   @if list.index($elements, 'badge') {
     .lab-ui__badge {
-      display: inline-flex; align-items: center; justify-content: center; border-radius: 30px;
-      font-size: 11px; font-weight: 650; padding: 7px 11px; background: var(--soft); color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 650;
+      padding: 7px 11px;
+      background: var(--soft);
+      color: var(--muted);
       white-space: nowrap;
     }
   }
   @if list.index($elements, 'badge') {
     .lab-ui__badge.lab-ui__badge--success {
-      background: var(--primary-soft); color: var(--on-primary-soft);
+      background: var(--primary-soft);
+      color: var(--on-primary-soft);
     }
   }
   @if list.index($elements, 'badge') {
     .lab-ui__badge.lab-ui__badge--active {
-      background: var(--tertiary-soft); color: var(--on-tertiary-soft);
+      background: var(--tertiary-soft);
+      color: var(--on-tertiary-soft);
     }
   }
   @if list.index($elements, 'row-title') {
     .lab-ui__row-title {
-      display: flex; flex-direction: column; gap: 5px; text-align: left; flex: 1; min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-align: left;
+      flex: 1;
+      min-width: 0;
     }
   }
-  @if list.index($elements, 'row-title') { .lab-ui__row-title strong { font-size: 14px; } }
-  @if list.index($elements, 'row-title') { .lab-ui__row-title span { font-size: 12px; color: var(--muted); } }
   @if list.index($elements, 'row-title') {
-    .lab-ui__row-title .lab-ui__eyebrow { font-size: 9px; margin: 0; }
+    .lab-ui__row-title strong {
+      font-size: 14px;
+    }
+  }
+  @if list.index($elements, 'row-title') {
+    .lab-ui__row-title span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+  }
+  @if list.index($elements, 'row-title') {
+    .lab-ui__row-title .lab-ui__eyebrow {
+      font-size: 9px;
+      margin: 0;
+    }
   }
   @if list.index($elements, 'mini-mark') {
     .lab-ui__mini-mark {
-      display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px;
-      background: var(--soft); font-size: 20px; font-weight: 800; flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--soft);
+      font-size: 20px;
+      font-weight: 800;
+      flex-shrink: 0;
     }
   }
   @if list.index($elements, 'empty') {
     .lab-ui__empty {
-      padding: 55px 20px; text-align: center; border: 1px dashed var(--line); border-radius: 20px;
+      padding: 55px 20px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 20px;
     }
   }
   @if list.index($elements, 'empty') {
     .lab-ui__empty mat-icon {
-      color: var(--accent); margin-bottom: 14px; font-size: 36px; width: 36px; height: 36px;
+      color: var(--accent);
+      margin-bottom: 14px;
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
     }
   }
-  @if list.index($elements, 'empty') { .lab-ui__empty p { font-size: 14px; margin-top: 10px; } }
-  @if list.index($elements, 'explanation') { .lab-ui__explanation { font-size: 12px; margin: 18px 0 26px; } }
+  @if list.index($elements, 'empty') {
+    .lab-ui__empty p {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  }
+  @if list.index($elements, 'explanation') {
+    .lab-ui__explanation {
+      font-size: 12px;
+      margin: 18px 0 26px;
+    }
+  }
   @if list.index($elements, 'progress-track') {
-    .lab-ui__progress-track { height: 5px; overflow: hidden; border-radius: 10px; background: var(--soft); }
+    .lab-ui__progress-track {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--soft);
+    }
   }
   @if list.index($elements, 'progress-track') {
     .lab-ui__progress-track span {
-      display: block; background: var(--accent); height: 100%; border-radius: 10px;
+      display: block;
+      background: var(--accent);
+      height: 100%;
+      border-radius: 10px;
       transition: width 0.25s;
     }
   }
