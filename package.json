@@ -44,6 +44,7 @@
     "@fsegurai/codemirror-theme-synthwave-84": "^6.0.0",
     "@tmdjr/coding-labs-contracts": "0.0.8",
     "@tmdjr/ngx-user-metadata": "^21.0.6",
+    "@tmdjr/ngx-shared-headers": "21.0.8",
     "@types/jasmine": "~5.1.0",
     "http-server": "^14.1.1",
     "jasmine-core": "~5.7.0",

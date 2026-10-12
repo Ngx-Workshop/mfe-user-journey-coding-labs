@@ -23,3 +23,5 @@ the largest folder number is not automatically the active feature.
 - [004 Journey routing](004-journey-routing/spec.md) — Implemented; hosted integration pending.
 
 - [005 Code quality refactor](005-code-quality-refactor/spec.md) — Complete (local refactor and verification).
+
+- [006 Shared hero](006-shared-hero/spec.md) — Complete.

@@ -79,3 +79,14 @@ journey VM is routing/workshop policy, not a component-size exception. The check
 now rejects presentation imports of data/view models, reverse data dependencies,
 UI dependencies in API/state and root-provided view models. It is a lightweight
 source check, not a full semantic dependency graph.
+
+## Shared hero — 2026-10-12
+
+LabHeroComponent is a content/theme adapter around NgxHero from shared headers
+21.0.3. LabHeroBackgroundComponent owns rising translucent bubbles; LabHeroArtComponent owns
+a glass test-tube rack with colored liquids and bubbling reactions. They project into heroBackground/heroArt slots and
+consume the inherited animation-play-state property, with reduced-motion support.
+NgxHero owns typography, responsive layout, decorative semantics and pause state.
+No API/store/VM dependencies were added to these presentation components. The
+consumer uses a checked-in vendor archive; no sibling source or new federation
+singleton is required. See [006 handoff](../specs/006-shared-hero/handoff.md).

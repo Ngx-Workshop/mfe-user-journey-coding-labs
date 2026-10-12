@@ -64,3 +64,22 @@ honest error/empty states. Successful data/workspace/result flows were tested wi
 HTTP doubles; a signed-in host walkthrough of the new bundle remains a release
 check. The temporary preview server was stopped; the existing server/output remained
 untouched. Verification used the available Node 24.9.0; project guidance remains Node 22.
+
+## Shared hero verification — 2026-10-12
+
+The remote consumes `vendor/tmdjr-ngx-shared-headers-21.0.3.tgz`, matching workshop
+and assessment consumers. Shared-library changes require a fresh producer archive
+and consumer manifest/lockfile update; registry publication is separate release work.
+
+46 ChromeHeadless tests, isolated production build, source types and architecture
+checks pass. Focused composition/motion tests are in
+`testing/app/features/coding-labs/components/journey/lab-hero.component.spec.ts`.
+Desktop/phone optimized previews at 1366px/390px have no horizontal overflow, hide
+artwork on phones and honor reduced motion. Both renders were visually reviewed;
+static preview catalog calls showed expected errors because no gateway was supplied.
+See [006 handoff](../specs/006-shared-hero/handoff.md).
+
+The laboratory visual revision replaces circuits/terminal with rising background
+bubbles and test-tube artwork. Its 2 focused hero tests, production build and
+architecture checks pass; desktop/phone and reduced-motion renders were rechecked.
+The preceding full-suite result belongs to initial shared-layout adoption.
