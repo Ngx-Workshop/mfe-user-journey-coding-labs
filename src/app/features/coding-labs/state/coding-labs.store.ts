@@ -13,6 +13,9 @@ import {
   defer,
   finalize,
   forkJoin,
+  concat,
+  concatMap,
+  map,
   of,
   switchMap,
   tap,
@@ -67,9 +70,6 @@ export class CodingLabsStore {
   refresh() {
     this.refreshes.next();
   }
-  clearError() {
-    this.errorState.set('');
-  }
   loadAttempt(id: string) {
     return this.api
       .attempt(id)
@@ -79,9 +79,7 @@ export class CodingLabsStore {
             ? of({ attempt, content: null })
             : this.api
                 .content(attempt.labId, attempt.versionId)
-                .pipe(
-                  switchMap((content) => of({ attempt, content }))
-                )
+                .pipe(map((content) => ({ attempt, content })))
         )
       );
   }
@@ -91,8 +89,29 @@ export class CodingLabsStore {
   save(id: string, body: SaveAttempt) {
     return this.command(this.api.save(id, body));
   }
-  submit(id: string, body: SaveAttempt) {
-    return this.command(this.api.submit(id, body));
+  // A single transaction keeps busy true between save and grading. Emit the saved
+  // revision first so scoped workspaces can retry grading without saving again.
+  saveAndSubmit(attempt: LabAttempt, code: string) {
+    const saved =
+      code === attempt.code
+        ? of(attempt)
+        : this.api.save(attempt._id, {
+            code,
+            revision: attempt.revision,
+          });
+    return this.command(
+      saved.pipe(
+        concatMap((progress) =>
+          concat(
+            of(progress),
+            this.api.submit(progress._id, {
+              code: progress.code,
+              revision: progress.revision,
+            })
+          )
+        )
+      )
+    );
   }
   private command(request: Observable<LabAttempt>) {
     return defer(() => {

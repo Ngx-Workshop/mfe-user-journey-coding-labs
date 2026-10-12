@@ -46,3 +46,21 @@ For direct local tests override the two API injection tokens or provide a local 
 ## Route verification — 2026-10-11
 
 [004 routing](../specs/004-journey-routing/handoff.md) adds Angular RouterTestingHarness coverage beneath a host prefix, including legacy redirects, workspace/result reconciliation, direct launch, unsaved exits and same-route parameter changes. Browser Back uses Location test doubles with the router location listener enabled; production bootstrap installs that listener through provideRouter. Hosted signed-in deep-link/refresh and workshop return still require deployment verification.
+
+
+## Quality refactor verification — 2026-10-11
+
+[005 handoff](../specs/005-code-quality-refactor/handoff.md) records 44 passing
+ChromeHeadless tests, strict source types, architecture checks without size warnings
+and the optimized isolated federation build. The suite now covers configured HTTP
+paths/credentials/payloads, save/grade ordering and busy lifetime, refresh/detail
+cancellation, scoped draft isolation and destroyed-scope command cleanup in addition
+to existing route/continuity/command/rendering tests.
+
+The signed-in beta discovery page was inspected as a baseline. The modified isolated
+build was previewed at 1366×900 and 390×844 with no horizontal overflow; search and
+history navigation worked. The static preview had no API gateway, so it exercised
+honest error/empty states. Successful data/workspace/result flows were tested with
+HTTP doubles; a signed-in host walkthrough of the new bundle remains a release
+check. The temporary preview server was stopped; the existing server/output remained
+untouched. Verification used the available Node 24.9.0; project guidance remains Node 22.

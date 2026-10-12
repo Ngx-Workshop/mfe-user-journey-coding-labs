@@ -11,6 +11,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { BehaviorSubject, map } from 'rxjs';
+import { LabWorkspaceViewModel } from '../../../../../../src/app/features/coding-labs/pages/journey/lab-workspace.view-model';
 import { JourneyViewModel } from '../../../../../../src/app/features/coding-labs/pages/journey/journey.view-model';
 import { attempt, content, lab } from '../../../../../fixtures/labs';
 describe('Coding journey commands', () => {
@@ -24,6 +25,7 @@ describe('Coding journey commands', () => {
     TestBed.configureTestingModule({
       providers: [
         JourneyViewModel,
+        LabWorkspaceViewModel,
         provideHttpClient(),
         provideHttpClientTesting(),
         {
@@ -194,6 +196,21 @@ describe('Coding journey commands', () => {
       .flush(content);
     expect(vm.code()).toBe('draft kept locally');
     expect(vm.dirty()).toBeTrue();
+  });
+
+  it('cancels an obsolete attempt read without hiding loading for the new route', () => {
+    route.next(convertToParamMap({ attempt: 'obsolete' }));
+    const old = http.expectOne(
+      '/api/user-metadata/coding-lab-attempts/obsolete'
+    );
+    route.next(convertToParamMap({ attempt: 'new-attempt' }));
+    expect(old.cancelled).toBeTrue();
+    expect(vm.detailLoading()).toBeTrue();
+    http
+      .expectOne('/api/user-metadata/coding-lab-attempts/new-attempt')
+      .flush({ ...attempt, _id: 'new-attempt', status: 'completed' });
+    expect(vm.attempt()?._id).toBe('new-attempt');
+    expect(vm.detailLoading()).toBeFalse();
   });
   it('does not mark an empty catalog view as unsaved', () => {
     route.next(convertToParamMap({}));
@@ -439,13 +456,11 @@ describe('Coding journey commands', () => {
       .expectOne('/api/user-metadata/coding-lab-attempts')
       .flush([]);
     TestBed.tick();
-    http
-      .expectOne('/api/user-metadata/coding-lab-attempts')
-      .flush({
-        ...attempt,
-        _id: 'new-attempt',
-        labId: otherLab.labId,
-      });
+    http.expectOne('/api/user-metadata/coding-lab-attempts').flush({
+      ...attempt,
+      _id: 'new-attempt',
+      labId: otherLab.labId,
+    });
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(
       ['attempts', 'new-attempt'],
       jasmine.objectContaining({

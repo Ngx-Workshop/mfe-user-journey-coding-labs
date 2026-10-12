@@ -21,3 +21,5 @@ the largest folder number is not automatically the active feature.
 - [003 Workshop continuity](003-workshop-continuity/spec.md) — Implemented; hosted integration pending.
 
 - [004 Journey routing](004-journey-routing/spec.md) — Implemented; hosted integration pending.
+
+- [005 Code quality refactor](005-code-quality-refactor/spec.md) — Complete (local refactor and verification).

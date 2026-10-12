@@ -80,4 +80,89 @@ describe('Coding labs store', () => {
     expect(title).toBe(attempt.title);
     http.expectNone('/api/coding-labs/published-labs/abc');
   });
+  it('keeps one busy transaction across save and grade, publishing the saved revision first', () => {
+    const emissions: Array<{
+      revision: number | null;
+      busy: boolean;
+    }> = [];
+    store.saveAndSubmit(attempt, 'solution').subscribe((progress) => {
+      emissions.push({
+        revision: progress?.revision ?? null,
+        busy: store.busy(),
+      });
+    });
+    const save = http.expectOne(
+      '/api/user-metadata/coding-lab-attempts/attempt'
+    );
+    expect(save.request.method).toBe('PATCH');
+    save.flush({ ...attempt, code: 'solution', revision: 1 });
+    expect(emissions).toEqual([{ revision: 1, busy: true }]);
+    expect(store.attempts()[0].revision).toBe(1);
+    const grade = http.expectOne(
+      '/api/user-metadata/coding-lab-attempts/attempt/submit'
+    );
+    expect(grade.request.body).toEqual({
+      code: 'solution',
+      revision: 1,
+    });
+    grade.flush({
+      ...attempt,
+      code: 'solution',
+      revision: 2,
+      status: 'completed',
+    });
+    expect(emissions).toEqual([
+      { revision: 1, busy: true },
+      { revision: 2, busy: true },
+    ]);
+    expect(store.busy()).toBeFalse();
+  });
+  it('retains the saved server revision when grading fails', () => {
+    store.saveAndSubmit(attempt, 'solution').subscribe();
+    http
+      .expectOne('/api/user-metadata/coding-lab-attempts/attempt')
+      .flush({ ...attempt, code: 'solution', revision: 1 });
+    http
+      .expectOne(
+        '/api/user-metadata/coding-lab-attempts/attempt/submit'
+      )
+      .flush({}, { status: 503, statusText: 'Offline' });
+    expect(store.attempts()[0].revision).toBe(1);
+    expect(store.attempts()[0].code).toBe('solution');
+    expect(store.error()).toBeTruthy();
+    expect(store.busy()).toBeFalse();
+  });
+  it('cancels an obsolete refresh and keeps loading true for its replacement', () => {
+    store.refresh();
+    const oldCatalog = http.expectOne(
+      '/api/coding-labs/published-labs'
+    );
+    const oldHistory = http.expectOne(
+      '/api/user-metadata/coding-lab-attempts'
+    );
+    store.refresh();
+    expect(oldCatalog.cancelled).toBeTrue();
+    expect(oldHistory.cancelled).toBeTrue();
+    expect(store.loading()).toBeTrue();
+    http.expectOne('/api/coding-labs/published-labs').flush([lab]);
+    http
+      .expectOne('/api/user-metadata/coding-lab-attempts')
+      .flush([]);
+    expect(store.loading()).toBeFalse();
+    expect(store.labs()).toEqual([lab]);
+  });
+  it('releases transaction busy state when its scoped subscriber is destroyed', () => {
+    const subscription = store
+      .saveAndSubmit(attempt, 'solution')
+      .subscribe();
+    const request = http.expectOne(
+      '/api/user-metadata/coding-lab-attempts/attempt'
+    );
+    subscription.unsubscribe();
+    expect(request.cancelled).toBeTrue();
+    expect(store.busy()).toBeFalse();
+    http.expectNone(
+      '/api/user-metadata/coding-lab-attempts/attempt/submit'
+    );
+  });
 });
